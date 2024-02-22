@@ -69,10 +69,12 @@ func createImage(path string) *widget.Button {
 		log.Fatal(err)
 	}
 
-	btn := widget.NewButtonWithIcon(path, fyne.NewStaticResource("icon", b), func() {
-		// do something
+	resource := fyne.NewStaticResource("icon", b)
+
+	btn := widget.NewButtonWithIcon(path, resource, func() {
 		copyImage(path)
 	})
+	btn.Alignment = 2
 	return btn
 }
 
@@ -96,14 +98,9 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 
 	imageList := imageList(results)
 
-	if len(imageList) < 1 {
-		content.Objects = content.Objects[:1]
-		return
-	}
-
 	for i := 0; i < len(imageList); i++ {
-		if i+1 < len(content.Objects) {
-			content.Objects[i+1] = imageList[i]
+		if i < len(content.Objects) {
+			content.Objects[i] = imageList[i]
 		} else {
 			content.Objects = append(content.Objects, imageList[i])
 		}
@@ -132,10 +129,10 @@ func render(window fyne.Window) {
 	img2 := createImage("reactions/test.jpg")
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
-	imageContainer := container.New(layout.NewGridLayoutWithRows(3), img2, img, img)
-	content := container.New(layout.NewGridLayoutWithRows(3), search, imageContainer)
+	imageContainer := container.New(layout.NewGridLayout(4), img2, img, img)
+	content := container.New(layout.NewGridLayout(1), search, imageContainer)
 	search.OnChanged = func(s string) {
-		go handleUpdate(s, window, content)
+		go handleUpdate(s, window, imageContainer)
 	}
 
 	window.SetContent(content)
