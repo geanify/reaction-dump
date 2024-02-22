@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -15,6 +16,10 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 )
+
+type Throttler struct {
+	t time.Time
+}
 
 func _exec(str string) {
 	cmd := exec.Command("bash", "-c", str)
@@ -42,13 +47,16 @@ func copyImage(path string) {
 }
 
 func textLookUp(text string) []string {
-	str := "tree -f -i | grep " + text
+	str := "tree -f -i -P *.jpg||*.png||*.jpeg||*.gif | grep " + text
 	out := _execOutput(str)
-	fmt.Println(out)
+	fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
 }
 
 func createImage(path string) *widget.Button {
+	if len(path) < 1 {
+		return nil
+	}
 	iconFile, err := os.Open(path)
 	if err != nil {
 		log.Fatal(err)
@@ -71,40 +79,49 @@ func createImage(path string) *widget.Button {
 func imageList(images []string) []*widget.Button {
 	imageList := make([]*widget.Button, 0)
 	for i := 0; i < len(images); i++ {
-		newImage := createImage("reactions/test.jpg")
-		imageList = append(imageList, newImage)
+		newImage := createImage(images[i])
+		if newImage != nil {
+			imageList = append(imageList, newImage)
+		}
 	}
 	return imageList
 }
 
-func handleUpdate(search string, window fyne.Window, searchWidget *widget.Entry) {
+func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 	results := textLookUp(search)
 	if len(search) < 2 {
 		return
 	}
+
 	imageList := imageList(results)
 
-	content := container.New(layout.NewGridLayoutWithRows(3), searchWidget)
-
-	for i := 0; i < len(imageList); i++ {
-		content.Objects = append(content.Objects, imageList[i])
+	for i := 1; i < len(imageList); i++ {
+		if content.Objects[i] != nil {
+			content.Objects[i] = imageList[i]
+		} else {
+			content.Objects = append(content.Objects, imageList[i])
+		}
 	}
 
-	window.SetContent(content)
+	go window.Content().Refresh()
+
 }
 
 func render(window fyne.Window) {
 	search := widget.NewEntry()
-	search.OnChanged = func(s string) {
-		go handleUpdate(s, window, search)
-	}
+	// search.OnChanged = func(s string) {
+	// 	go handleUpdate(s, window, search)
+	// }
 
 	img := createImage("reactions/test.jpg")
 	img2 := createImage("reactions/test.jpg")
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
-
-	content := container.New(layout.NewGridLayoutWithRows(3), search, img2, img, img)
+	imageContainer := container.New(layout.NewGridLayoutWithRows(3), img2, img, img)
+	content := container.New(layout.NewGridLayoutWithRows(3), search, imageContainer)
+	search.OnChanged = func(s string) {
+		go handleUpdate(s, window, content)
+	}
 
 	window.SetContent(content)
 }
