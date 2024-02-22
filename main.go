@@ -42,7 +42,7 @@ func _execOutput(str string) string {
 }
 
 func copyImage(path string) {
-	str := "cat " + path + "| xclip -selection clipboard -target image/png -i"
+	str := "cat '" + path + "' | xclip -selection clipboard -target image/png -i"
 	_exec(str)
 }
 
@@ -69,7 +69,7 @@ func createImage(path string) *widget.Button {
 		log.Fatal(err)
 	}
 
-	btn := widget.NewButtonWithIcon("Browse", fyne.NewStaticResource("icon", b), func() {
+	btn := widget.NewButtonWithIcon(path, fyne.NewStaticResource("icon", b), func() {
 		// do something
 		copyImage(path)
 	})
@@ -92,8 +92,14 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 	if len(search) < 2 {
 		return
 	}
+	defer handleRefresh(window, content)
 
 	imageList := imageList(results)
+
+	if len(imageList) < 1 {
+		content.Objects = content.Objects[:1]
+		return
+	}
 
 	for i := 0; i < len(imageList); i++ {
 		if i+1 < len(content.Objects) {
@@ -109,10 +115,14 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 	if len(imageList) < len(content.Objects) {
 		content.Objects = content.Objects[:len(imageList)]
 	}
+}
 
-	go window.Canvas().Refresh(content)
-	go window.Content().Refresh()
-
+func handleRefresh(window fyne.Window, content *fyne.Container) {
+	go func() {
+		time.Sleep(1000 * time.Millisecond)
+		window.Canvas().Refresh(content)
+		window.Content().Refresh()
+	}()
 }
 
 func render(window fyne.Window) {
