@@ -95,23 +95,28 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 
 	imageList := imageList(results)
 
-	for i := 1; i < len(imageList); i++ {
-		if content.Objects[i] != nil {
-			content.Objects[i] = imageList[i]
+	for i := 0; i < len(imageList); i++ {
+		if i+1 < len(content.Objects) {
+			content.Objects[i+1] = imageList[i]
 		} else {
 			content.Objects = append(content.Objects, imageList[i])
 		}
 	}
 
+	for i := len(imageList); i < len(content.Objects); i++ {
+		content.Objects[i] = nil
+	}
+	if len(imageList) < len(content.Objects) {
+		content.Objects = content.Objects[:len(imageList)]
+	}
+
+	go window.Canvas().Refresh(content)
 	go window.Content().Refresh()
 
 }
 
 func render(window fyne.Window) {
 	search := widget.NewEntry()
-	// search.OnChanged = func(s string) {
-	// 	go handleUpdate(s, window, search)
-	// }
 
 	img := createImage("reactions/test.jpg")
 	img2 := createImage("reactions/test.jpg")
