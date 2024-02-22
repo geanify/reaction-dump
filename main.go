@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -40,10 +41,11 @@ func copyImage(path string) {
 	_exec(str)
 }
 
-func textLookUp(text string) {
+func textLookUp(text string) []string {
 	str := "tree -f -i | grep " + text
 	out := _execOutput(str)
 	fmt.Println(out)
+	return strings.Split(out, "\n")
 }
 
 func createImage(path string) *widget.Button {
@@ -75,9 +77,27 @@ func imageList(images []string) []*widget.Button {
 	return imageList
 }
 
+func handleUpdate(search string, window fyne.Window, searchWidget *widget.Entry) {
+	results := textLookUp(search)
+	if len(search) < 2 {
+		return
+	}
+	imageList := imageList(results)
+
+	content := container.New(layout.NewGridLayoutWithRows(3), searchWidget)
+
+	for i := 0; i < len(imageList); i++ {
+		content.Objects = append(content.Objects, imageList[i])
+	}
+
+	window.SetContent(content)
+}
+
 func render(window fyne.Window) {
 	search := widget.NewEntry()
-	search.OnChanged = textLookUp
+	search.OnChanged = func(s string) {
+		go handleUpdate(s, window, search)
+	}
 
 	img := createImage("reactions/test.jpg")
 	img2 := createImage("reactions/test.jpg")
