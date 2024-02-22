@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -39,7 +40,13 @@ func textLookUp(text string) {
 
 func main() {
 	// location := ""
-	copyImage("", "test.jpg")
+	args := os.Args
+
+	if len(os.Args[1:]) < 1 {
+		copyImage("", "test.jpg")
+	} else {
+		copyImage(args[1], "test.jpg")
+	}
 	textLookUp("te")
 
 	// exec.Command("touch test.txt")
