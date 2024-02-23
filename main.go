@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,6 +11,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
@@ -49,11 +49,11 @@ func copyImage(path string) {
 func textLookUp(text string) []string {
 	str := "tree -f -i | grep -E '.jpg|png|gif|jpeg' | grep " + text
 	out := _execOutput(str)
-	fmt.Println(strings.Split(out, "\n"))
+	// fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
 }
 
-func createImage(path string) *widget.Button {
+func createImage(path string) *fyne.Container {
 	if len(path) < 1 {
 		return nil
 	}
@@ -70,16 +70,21 @@ func createImage(path string) *widget.Button {
 	}
 
 	resource := fyne.NewStaticResource("icon", b)
+	image := canvas.NewImageFromResource(resource)
 
-	btn := widget.NewButtonWithIcon(path, resource, func() {
+	image.ScaleMode = 1
+	image.FillMode = 1
+
+	btn := widget.NewButton("", func() {
 		copyImage(path)
 	})
 	btn.Alignment = 2
-	return btn
+	content := container.New(layout.NewStackLayout(), btn, image)
+	return content
 }
 
-func imageList(images []string) []*widget.Button {
-	imageList := make([]*widget.Button, 0)
+func imageList(images []string) []*fyne.Container {
+	imageList := make([]*fyne.Container, 0)
 	for i := 0; i < len(images); i++ {
 		newImage := createImage(images[i])
 		if newImage != nil {
@@ -116,24 +121,25 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 
 func handleRefresh(window fyne.Window, content *fyne.Container) {
 	go func() {
-		time.Sleep(1000 * time.Millisecond)
 		window.Canvas().Refresh(content)
-		window.Content().Refresh()
+		// window.Content().Refresh()
 	}()
 }
 
 func render(window fyne.Window) {
 	search := widget.NewEntry()
-
-	img := createImage("reactions/test.jpg")
-	img2 := createImage("reactions/test.jpg")
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
-	imageContainer := container.New(layout.NewGridLayout(4), img2, img, img)
-	content := container.New(layout.NewGridLayout(1), search, imageContainer)
+	imageContainer := container.New(layout.NewGridLayout(3))
+	handleUpdate("", window, imageContainer)
+	content := container.New(layout.NewGridLayoutWithRows(5), search, imageContainer)
+
 	search.OnChanged = func(s string) {
 		go handleUpdate(s, window, imageContainer)
 	}
+
+	// mx, err := fyne.Vector2{10000.0, 50.0}
+	// search.Size().Max(mx)
 
 	window.SetContent(content)
 }
