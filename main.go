@@ -147,8 +147,8 @@ func render(window fyne.Window) {
 
 	// mx, err := fyne.Vector2{10000.0, 50.0}
 	// search.Size().Max(mx)
-
 	window.SetContent(content)
+	window.Canvas().Focus(search)
 }
 
 func main() {
