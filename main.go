@@ -74,7 +74,7 @@ func textLookUp(text string) []string {
 		folder = args[1]
 	}
 
-	str := "tree " + folder + " -f -i | grep -E '.jpg|png|gif|jpeg' | grep -E '" + text + "'"
+	str := "tree " + folder + " -f -i --filelimit 30 | grep -E '.jpg|png|gif|jpeg' | grep -E '" + text + "'"
 	out := _execOutput(str)
 	// fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
