@@ -72,13 +72,13 @@ func createImage(path string) *fyne.Container {
 	resource := fyne.NewStaticResource("icon", b)
 	image := canvas.NewImageFromResource(resource)
 
-	image.ScaleMode = 1
 	image.FillMode = 1
 
 	btn := widget.NewButton("", func() {
 		copyImage(path)
 	})
 	btn.Alignment = 2
+
 	content := container.New(layout.NewStackLayout(), btn, image)
 	return content
 }
@@ -130,9 +130,9 @@ func render(window fyne.Window) {
 	search := widget.NewEntry()
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
-	imageContainer := container.New(layout.NewGridLayout(3))
+	imageContainer := container.New(layout.NewAdaptiveGridLayout(4))
 	handleUpdate("", window, imageContainer)
-	content := container.New(layout.NewGridLayoutWithRows(5), search, imageContainer)
+	content := container.New(layout.NewVBoxLayout(), search, imageContainer)
 
 	search.OnChanged = func(s string) {
 		go handleUpdate(s, window, imageContainer)
