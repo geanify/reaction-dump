@@ -50,7 +50,7 @@ func textLookUp(text string) []string {
 	args := os.Args
 	folder := "."
 
-	if len(os.Args[1:]) > 1 {
+	if len(os.Args[1:]) >= 1 {
 		folder = args[1]
 	}
 
