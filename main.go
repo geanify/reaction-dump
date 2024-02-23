@@ -103,6 +103,7 @@ func createImage(path string) *fyne.Container {
 
 	btn := widget.NewButton("", func() {
 		copyImage(path)
+		os.Exit(0)
 	})
 	btn.Alignment = 2
 
