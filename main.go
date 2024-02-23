@@ -47,7 +47,14 @@ func copyImage(path string) {
 }
 
 func textLookUp(text string) []string {
-	str := "tree -f -i | grep -E '.jpg|png|gif|jpeg' | grep -E '" + text + "'"
+	args := os.Args
+	folder := "."
+
+	if len(os.Args[1:]) > 1 {
+		folder = args[1]
+	}
+
+	str := "tree " + folder + " -f -i | grep -E '.jpg|png|gif|jpeg' | grep -E '" + text + "'"
 	out := _execOutput(str)
 	// fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
