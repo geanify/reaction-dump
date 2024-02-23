@@ -123,7 +123,7 @@ func imageList(images []string) []*fyne.Container {
 
 func handleImageLookUp(search string, window fyne.Window, content *fyne.Container) {
 	results := textLookUp(search)
-	if len(search) < 2 {
+	if len(search) < 1 {
 		return
 	}
 	imageList := imageList(results)
