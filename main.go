@@ -130,7 +130,7 @@ func render(window fyne.Window) {
 	search := widget.NewEntry()
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
-	imageContainer := container.New(layout.NewGridWrapLayout(fyne.NewSize(60, 60)))
+	imageContainer := container.New(layout.NewGridWrapLayout(fyne.NewSize(190, 108)))
 	handleUpdate("", window, imageContainer)
 	content := container.New(layout.NewVBoxLayout(), search, imageContainer)
 
