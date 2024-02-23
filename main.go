@@ -18,7 +18,27 @@ import (
 )
 
 type Throttler struct {
-	t time.Time
+	start         time.Time
+	shouldExecute bool
+	call          func()
+}
+
+func (th *Throttler) executeAfter() {
+	if !th.shouldExecute {
+		return
+	}
+	now := time.Now()
+	elapsed := now.Sub(th.start).Milliseconds()
+	if elapsed < 300 {
+		time.Sleep(300 * time.Millisecond)
+	}
+	th.shouldExecute = false
+	th.call()
+	th.reset()
+}
+
+func (th *Throttler) reset() {
+	th.start = time.Now()
 }
 
 func _exec(str string) {
@@ -101,9 +121,9 @@ func imageList(images []string) []*fyne.Container {
 	return imageList
 }
 
-func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
+func handleImageLookUp(search string, window fyne.Window, content *fyne.Container) {
 	results := textLookUp(search)
-	if len(search) < 1 {
+	if len(search) < 2 {
 		return
 	}
 	imageList := imageList(results)
@@ -119,18 +139,17 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 	for i := len(imageList); i < len(content.Objects); i++ {
 		content.Objects[i] = nil
 	}
-	if len(imageList) < len(content.Objects) {
-		content.Objects = content.Objects[:len(imageList)]
-	}
-
 	handleRefresh(window, content)
+}
+func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
+	handleImageLookUp(search, window, content)
 }
 
 func handleRefresh(window fyne.Window, content *fyne.Container) {
 	window.Canvas().Refresh(content)
 }
 
-func render(window fyne.Window) {
+func render(window fyne.Window, th *Throttler) {
 	search := widget.NewEntry()
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
@@ -139,8 +158,14 @@ func render(window fyne.Window) {
 	content := container.New(layout.NewVBoxLayout(), search, imageContainer)
 
 	search.OnChanged = func(s string) {
-		go handleUpdate(s, window, imageContainer)
+		th.reset()
+		th.call = func() {
+			handleUpdate(s, window, imageContainer)
+		}
+		th.shouldExecute = true
 	}
+
+	go executeCall(th)
 
 	// mx, err := fyne.Vector2{10000.0, 50.0}
 	// search.Size().Max(mx)
@@ -148,10 +173,18 @@ func render(window fyne.Window) {
 	window.Canvas().Focus(search)
 }
 
+func executeCall(th *Throttler) {
+	for true {
+		th.executeAfter()
+	}
+}
+
 func main() {
+	th := &Throttler{start: time.Now(), call: func() {}}
 	myApp := app.New()
 	window := myApp.NewWindow("Reaction Dump")
-	render(window)
+	render(window, th)
+	go executeCall(th)
 
 	window.CenterOnScreen()
 	window.SetFixedSize(true)
