@@ -74,13 +74,6 @@ func handleImageLookUp(search string, window fyne.Window, content *fyne.Containe
 	for i := len(imageList); i < len(content.Objects); i++ {
 		content.Objects[i] = nil
 	}
-	handleRefresh(window, content)
-}
-func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
-	handleImageLookUp(search, window, content)
-}
-
-func handleRefresh(window fyne.Window, content *fyne.Container) {
 	window.Canvas().Refresh(content)
 }
 
@@ -89,13 +82,13 @@ func render(window fyne.Window, th *Throttler) {
 	// text := canvas.NewText("Overlay", color.Black)
 	// imgWidget := widget.NewCard("test", "test2", img)
 	imageContainer := container.New(layout.NewGridWrapLayout(fyne.NewSize(190, 108)))
-	handleUpdate("", window, imageContainer)
+	handleImageLookUp("", window, imageContainer)
 	content := container.New(layout.NewVBoxLayout(), search, imageContainer)
 
 	search.OnChanged = func(s string) {
 		th.reset()
 		th.call = func() {
-			handleUpdate(s, window, imageContainer)
+			handleImageLookUp(s, window, imageContainer)
 		}
 		th.shouldExecute = true
 	}
