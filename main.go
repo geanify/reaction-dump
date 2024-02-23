@@ -47,7 +47,7 @@ func copyImage(path string) {
 }
 
 func textLookUp(text string) []string {
-	str := "tree -f -i | grep -E '.jpg|png|gif|jpeg' | grep " + text
+	str := "tree -f -i | grep -E '.jpg|png|gif|jpeg' | grep -E '" + text + "'"
 	out := _execOutput(str)
 	// fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
