@@ -15,6 +15,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/micmonay/keybd_event"
 )
 
 type Throttler struct {
@@ -80,7 +81,7 @@ func textLookUp(text string) []string {
 	return strings.Split(out, "\n")
 }
 
-func createImage(path string) *fyne.Container {
+func createImage(path string, window fyne.Window) *fyne.Container {
 	if len(path) < 1 {
 		return nil
 	}
@@ -103,7 +104,8 @@ func createImage(path string) *fyne.Container {
 
 	btn := widget.NewButton("", func() {
 		copyImage(path)
-		os.Exit(0)
+		window.Close()
+		deferPaste(window)
 	})
 	btn.Alignment = 2
 
@@ -111,10 +113,10 @@ func createImage(path string) *fyne.Container {
 	return content
 }
 
-func imageList(images []string) []*fyne.Container {
+func imageList(images []string, window fyne.Window) []*fyne.Container {
 	imageList := make([]*fyne.Container, 0)
 	for i := 0; i < len(images); i++ {
-		newImage := createImage(images[i])
+		newImage := createImage(images[i], window)
 		if newImage != nil {
 			imageList = append(imageList, newImage)
 		}
@@ -127,7 +129,7 @@ func handleImageLookUp(search string, window fyne.Window, content *fyne.Containe
 	if len(search) < 1 {
 		return
 	}
-	imageList := imageList(results)
+	imageList := imageList(results, window)
 
 	for i := 0; i < len(imageList); i++ {
 		if i < len(content.Objects) {
@@ -180,6 +182,24 @@ func executeCall(th *Throttler) {
 	}
 }
 
+func deferPaste(window fyne.Window) {
+	// str := "sleep 1 ; xclip -selection clipboard -o >"
+	window.Close()
+	go func() {
+		kb, err := keybd_event.NewKeyBonding()
+		if err != nil {
+			os.Exit(0)
+		}
+		kb.HasCTRL(true)
+		kb.SetKeys(keybd_event.VK_V)
+		// _exec(str)
+		time.Sleep(500 * time.Millisecond)
+
+		kb.Press()
+		os.Exit(0)
+	}()
+}
+
 func main() {
 	th := &Throttler{start: time.Now(), call: func() {}}
 	myApp := app.New()
@@ -191,6 +211,10 @@ func main() {
 	window.SetFixedSize(true)
 	window.Resize(fyne.NewSize(800, 600))
 	window.ShowAndRun()
+
+	for true {
+
+	}
 
 	// exec.Command("touch test.txt")
 }
