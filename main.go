@@ -106,8 +106,6 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 	if len(search) < 1 {
 		return
 	}
-	defer handleRefresh(window, content)
-
 	imageList := imageList(results)
 
 	for i := 0; i < len(imageList); i++ {
@@ -124,13 +122,12 @@ func handleUpdate(search string, window fyne.Window, content *fyne.Container) {
 	if len(imageList) < len(content.Objects) {
 		content.Objects = content.Objects[:len(imageList)]
 	}
+
+	handleRefresh(window, content)
 }
 
 func handleRefresh(window fyne.Window, content *fyne.Container) {
-	go func() {
-		window.Canvas().Refresh(content)
-		// window.Content().Refresh()
-	}()
+	window.Canvas().Refresh(content)
 }
 
 func render(window fyne.Window) {
@@ -152,15 +149,6 @@ func render(window fyne.Window) {
 }
 
 func main() {
-	args := os.Args
-
-	if len(os.Args[1:]) < 1 {
-		copyImage("test.jpg")
-	} else {
-		copyImage(args[1] + "test.jpg")
-	}
-	textLookUp("te")
-
 	myApp := app.New()
 	window := myApp.NewWindow("Reaction Dump")
 	render(window)
