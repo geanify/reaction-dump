@@ -20,7 +20,7 @@ func main() {
 	window.ShowAndRun()
 
 	for true {
-
+		time.Sleep(300 * time.Second)
 	}
 
 	// exec.Command("touch test.txt")

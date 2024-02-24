@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -8,7 +9,6 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	"github.com/micmonay/keybd_event"
 )
 
 type Throttler struct {
@@ -56,37 +56,30 @@ func _execOutput(str string) string {
 }
 
 func copyImage(path string) {
+	fmt.Println(path)
 	str := "cat '" + path + "' | xclip -selection clipboard -target image/png -i"
 	_exec(str)
 }
 
 func textLookUp(text string) []string {
 	args := os.Args
-	folder := "."
+	folder := "./"
 
 	if len(os.Args[1:]) >= 1 {
 		folder = args[1]
 	}
 
-	str := "tree " + folder + " -f -i --filelimit 30 | grep -E '.jpg|png|gif|jpeg' | grep -E '" + text + "'"
+	find := "find " + folder + " -type f \\( -iname \\*.jpg -o -iname \\*.png -o -iname \\*.gif -o -iname \\*.jpeg \\)"
+	str := find + " | grep -E '" + text + "'"
 	out := _execOutput(str)
-	// fmt.Println(strings.Split(out, "\n"))
+	fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
 }
 func deferPaste(window fyne.Window) {
 	// str := "sleep 1 ; xclip -selection clipboard -o >"
 	window.Close()
 	go func() {
-		kb, err := keybd_event.NewKeyBonding()
-		if err != nil {
-			os.Exit(0)
-		}
-		kb.HasCTRL(true)
-		kb.SetKeys(keybd_event.VK_V)
-		// _exec(str)
-		time.Sleep(500 * time.Millisecond)
-
-		kb.Press()
+		autoPaste()
 		os.Exit(0)
 	}()
 }
