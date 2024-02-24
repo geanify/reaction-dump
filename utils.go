@@ -70,7 +70,7 @@ func textLookUp(text string) []string {
 	}
 
 	find := "find " + folder + " -type f \\( -iname \\*.jpg -o -iname \\*.png -o -iname \\*.gif -o -iname \\*.jpeg \\)"
-	str := find + " | grep -E '" + text + "'"
+	str := find + " | grep " + text
 	out := _execOutput(str)
 	fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")

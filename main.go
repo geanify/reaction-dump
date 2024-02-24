@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -14,6 +15,9 @@ func main() {
 	render(window, th)
 	go executeCall(th)
 
+	window.SetOnClosed(func() {
+		os.Exit(0)
+	})
 	window.CenterOnScreen()
 	window.SetFixedSize(true)
 	window.Resize(fyne.NewSize(800, 600))
