@@ -77,6 +77,24 @@ func handleImageLookUp(search string, window fyne.Window, content *fyne.Containe
 	window.Canvas().Refresh(content)
 }
 
+func handleEnter(search string, window fyne.Window) {
+	if len(search) < 1 {
+		window.Close()
+		return
+	}
+	results := textLookUp(search)
+
+	if len(results) < 1 {
+		return
+	}
+	path := results[0]
+
+	copyImage(path)
+	window.Close()
+	deferPaste(window)
+
+}
+
 func render(window fyne.Window, th *Throttler) {
 	search := widget.NewEntry()
 	// text := canvas.NewText("Overlay", color.Black)
@@ -84,7 +102,7 @@ func render(window fyne.Window, th *Throttler) {
 	imageContainer := container.New(layout.NewGridWrapLayout(fyne.NewSize(190, 108)))
 	handleImageLookUp("", window, imageContainer)
 	content := container.New(layout.NewVBoxLayout(), search, imageContainer)
-
+	search.PlaceHolder = "Your Face When..."
 	search.OnChanged = func(s string) {
 		th.reset()
 		th.call = func() {
@@ -93,10 +111,18 @@ func render(window fyne.Window, th *Throttler) {
 		th.shouldExecute = true
 	}
 
+	search.OnSubmitted = func(s string) {
+		handleEnter(s, window)
+	}
+
+	window.Canvas().SetOnTypedKey(func(k *fyne.KeyEvent) {
+		if k.Name == fyne.KeyEscape {
+			window.Close()
+		}
+	})
+
 	go executeCall(th)
 
-	// mx, err := fyne.Vector2{10000.0, 50.0}
-	// search.Size().Max(mx)
 	window.SetContent(content)
 	window.Canvas().Focus(search)
 }
