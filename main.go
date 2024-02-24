@@ -16,6 +16,7 @@ func main() {
 	go executeCall(th)
 
 	window.SetOnClosed(func() {
+		time.Sleep(1 * time.Second)
 		os.Exit(0)
 	})
 	window.CenterOnScreen()
