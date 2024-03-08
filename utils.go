@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -56,8 +55,7 @@ func _execOutput(str string) string {
 }
 
 func copyImage(path string) {
-	fmt.Println(path)
-	str := "cat '" + path + "' | xclip -selection clipboard -target image/png -i"
+	str := "xclip -selection clipboard -t image/png -i " + path
 	_exec(str)
 }
 
@@ -72,7 +70,6 @@ func textLookUp(text string) []string {
 	find := "find " + folder + " -type f \\( -iname \\*.jpg -o -iname \\*.png -o -iname \\*.gif -o -iname \\*.jpeg \\)"
 	str := find + "| head -30 | grep -P '" + text + "'"
 	out := _execOutput(str)
-	fmt.Println(strings.Split(out, "\n"))
 	return strings.Split(out, "\n")
 }
 func deferPaste(window fyne.Window) {

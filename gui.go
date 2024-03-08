@@ -5,12 +5,16 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
+
+	"fyne.io/fyne/v2/storage"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	fyneXWidget "fyne.io/x/fyne/widget"
 )
 
 func createImage(path string, window fyne.Window) *fyne.Container {
@@ -42,6 +46,23 @@ func createImage(path string, window fyne.Window) *fyne.Container {
 	btn.Alignment = 2
 
 	content := container.New(layout.NewStackLayout(), btn, image)
+
+	if strings.Contains(path, ".gif") {
+		image, err := fyneXWidget.NewAnimatedGif(storage.NewFileURI(path))
+		if err != nil {
+			return content
+		}
+		image.Start()
+
+		btn := widget.NewButton("", func() {
+			copyImage(path)
+			window.Close()
+			deferPaste(window)
+		})
+		btn.Alignment = 2
+
+		content = container.New(layout.NewStackLayout(), btn, image)
+	}
 	return content
 }
 
